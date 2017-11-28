@@ -109,6 +109,10 @@ namespace ValaScript {
 
             if (current_char == '}') return next_token (current_char, TokenType.RIGHT_BRACE);
 
+            if (current_char == '.') return next_token (current_char, TokenType.DOT);
+
+            if (current_char == ',') return next_token (current_char, TokenType.COMMA);
+
             if (current_char == '\0') return next_token (current_char, TokenType.EOF);
 
             advance ();

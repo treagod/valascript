@@ -71,9 +71,46 @@ namespace ValaScript {
         public Expr right {
             get { return _right; }
         }
+    }
 
-        public string to_s () {
-            return _left.token.lexeme + " " + token.lexeme + " " + _right.token.lexeme;
+    class CallExpr : Expr {
+        private Array<Expr> _parameters = new Array<Expr> ();
+        private Expr _callee;
+
+        public Array<Expr> parameters {
+            get { return _parameters; }
+        }
+
+        public Expr callee {
+            get { return _callee; }
+        }
+
+        public CallExpr (Token token, Expr callee) {
+            base (token);
+            _callee = callee;
+        }
+
+        public void add_parameter (Expr parameter) {
+            _parameters.append_val (parameter);
+        }
+    }
+
+    class AccessExpr : Expr {
+        private Expr _accessee;
+        private Expr _accessor;
+
+        private Expr accessee {
+            get { return _accessee; }
+        }
+
+        private Expr accessor {
+            get { return _accessor; }
+        }
+
+        public AccessExpr (Token token, Expr accessee, Expr accessor) {
+            base (token);
+            _accessee = accessee;
+            _accessor = accessor;
         }
     }
 
