@@ -7,6 +7,8 @@ executable('valascript',
     'src/scanner.vala',
     'src/token.vala',
     'src/utils.vala',
+    'src/parser.vala',
+    'src/ast.vala',
     dependencies: [
         gee_dep
     ])

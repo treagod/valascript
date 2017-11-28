@@ -3,21 +3,26 @@ using Gee;
 
 namespace ValaScript {
     class Scanner {
-        private string source;
+        private string _source;
         private int position;
         private char current_char;
         private HashMap<string, TokenType> keywords = new HashMap<string, TokenType> ();
 
         public Scanner (string src) {
-            source = src;
+            _source = src;
             position = 0;
-            current_char = source[0];
+            current_char = _source[0];
             create_keywords ();
         }
 
-        public Token next_token () {
-            if (is_whitespace ()) {
+        public string source {
+            get { return _source; }
+        }
+
+        public Token get_token () {
+            if (is_whitespace () || is_comment ()) {
                 skip_whitespace ();
+                skip_comment ();
             }
 
             if (is_key_or_id ()){
@@ -39,78 +44,78 @@ namespace ValaScript {
             if (current_char == '+') {
                 if (peek () == '=') return next_combined_operator(current_char, TokenType.PLUS_EQUAL);
 
-                return next_tok (current_char, TokenType.PLUS);
+                return next_token (current_char, TokenType.PLUS);
             }
 
             if (current_char == '-') {
                 if (peek () == '=') return next_combined_operator(current_char, TokenType.MINUS_EQUAL);
 
-                return next_tok (current_char, TokenType.MINUS);
+                return next_token (current_char, TokenType.MINUS);
             }
 
             if (current_char == '*') {
                 if (peek () == '=') return next_combined_operator(current_char, TokenType.ASTERISK_EQUAL);
 
-                return next_tok (current_char, TokenType.ASTERISK);
+                return next_token (current_char, TokenType.ASTERISK);
             }
 
             if (current_char == '/') {
                 if (peek () == '=') return next_combined_operator(current_char, TokenType.SLASH_EQUAL);
 
-                return next_tok (current_char, TokenType.SLASH);
+                return next_token (current_char, TokenType.SLASH);
             }
 
             if (current_char == '=') {
                 if (peek () == '=') return next_combined_operator(current_char, TokenType.EQUAL_EQUAL);
 
-                return next_tok (current_char, TokenType.EQUAL);
+                return next_token (current_char, TokenType.EQUAL);
             }
 
             if (current_char == '<') {
                 if (peek () == '=') return next_combined_operator(current_char, TokenType.LESS_EQUAL);
 
-                return next_tok (current_char, TokenType.LESS_EQUAL);
+                return next_token (current_char, TokenType.LESS_EQUAL);
             }
 
             if (current_char == '>') {
                 if (peek () == '=') return next_combined_operator(current_char, TokenType.GREATER_EQUAL);
 
-                return next_tok (current_char, TokenType.GREATER);
+                return next_token (current_char, TokenType.GREATER);
             }
 
             if (current_char == '!') {
                 if (peek () == '=') return next_combined_operator(current_char, TokenType.NOT_EQUAL);
 
-                return next_tok (current_char, TokenType.NOT);
+                return next_token (current_char, TokenType.NOT);
             }
 
             if (current_char == '/') {
                 if (peek () == '=') return next_combined_operator(current_char, TokenType.SLASH_EQUAL);
 
-                return next_tok (current_char, TokenType.SLASH);
+                return next_token (current_char, TokenType.SLASH);
             }
 
-            if (current_char == '\n') return next_tok (current_char, TokenType.NEWLINE); // Todo: Rename
+            if (current_char == '\n') return next_token (current_char, TokenType.NEWLINE); // Todo: Rename
 
-            if (current_char == '(') return next_tok (current_char, TokenType.LEFT_PAREN);
+            if (current_char == '(') return next_token (current_char, TokenType.LEFT_PAREN);
 
-            if (current_char == ')') return next_tok (current_char, TokenType.RIGHT_PAREN);
+            if (current_char == ')') return next_token (current_char, TokenType.RIGHT_PAREN);
 
-            if (current_char == '[') return next_tok (current_char, TokenType.LEFT_BRACKET);
+            if (current_char == '[') return next_token (current_char, TokenType.LEFT_BRACKET);
 
-            if (current_char == ']') return next_tok (current_char, TokenType.RIGHT_BRACKET);
+            if (current_char == ']') return next_token (current_char, TokenType.RIGHT_BRACKET);
 
-            if (current_char == '{') return next_tok (current_char, TokenType.LEFT_BRACE);
+            if (current_char == '{') return next_token (current_char, TokenType.LEFT_BRACE);
 
-            if (current_char == '}') return next_tok (current_char, TokenType.RIGHT_BRACE);
+            if (current_char == '}') return next_token (current_char, TokenType.RIGHT_BRACE);
 
-            if (current_char == '\0') return next_tok (current_char, TokenType.EOF);
+            if (current_char == '\0') return next_token (current_char, TokenType.EOF);
 
             advance ();
             return new Token ("Invalid", position, TokenType.INVALID);
         }
 
-        private Token next_tok (char c, TokenType typ) {
+        private Token next_token (char c, TokenType typ) {
             int pos = position;
             advance();
             return new Token(c.to_string (), pos, typ);
@@ -230,16 +235,16 @@ namespace ValaScript {
         }
 
         private char peek(int i = 1) {
-            if (position + i > source.length) return '\0';
-            return source[position + i];
+            if (position + i > _source.length) return '\0';
+            return _source[position + i];
         }
 
         private void advance () {
             position += 1;
-            if (position >= source.length) {
+            if (position >= _source.length) {
                 current_char = '\0';
             } else {
-                current_char = source[position];
+                current_char = _source[position];
             }
         }
 
@@ -250,6 +255,12 @@ namespace ValaScript {
             keywords.set("false", TokenType.FALSE);
             keywords.set("class", TokenType.CLASS);
             keywords.set("is", TokenType.IS);
+            keywords.set("in", TokenType.IN);
+            keywords.set("while", TokenType.WHILE);
+            keywords.set("for", TokenType.FOR);
+            keywords.set("break", TokenType.BREAK);
+            keywords.set("continue", TokenType.CONTINUE);
+            keywords.set("return", TokenType.RETURN);
         }
 
         private bool is_hex () {
@@ -260,6 +271,18 @@ namespace ValaScript {
 
         private bool is_whitespace () {
             return current_char == ' ' || current_char == '\t' || current_char == '\v';
+        }
+
+        private bool is_comment () {
+            return current_char == '/' && peek () == '/';
+        }
+
+        private void skip_comment () {
+            if (is_comment ()) {
+                while (!(current_char == '\n' || current_char == '\0')) {
+                    advance ();
+                }
+            }
         }
 
         private void skip_whitespace () {

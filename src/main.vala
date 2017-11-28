@@ -2,13 +2,8 @@ void run_prompt () {
     stdout.printf("> ");
     string? line = stdin.read_line ();
 
-    var scanner = new ValaScript.Scanner (line);
-    var token = scanner.next_token ();
-    while (token.typ != ValaScript.TokenType.EOF) {
-        stdout.printf ("%s %d %s\n", token.lexeme, token.position, token.typ.to_string ());
-        token = scanner.next_token ();
-    }
-
+    var parser = new ValaScript.Parser (line);
+    parser.build_ast ();
 }
 
 void run_file (string path) {

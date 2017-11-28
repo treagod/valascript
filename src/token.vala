@@ -8,7 +8,7 @@ namespace ValaScript {
         LESS, LESS_EQUAL, GREATER, GREATER_EQUAL, EQUAL, NOT, NOT_EQUAL,
 
         // Keywords
-        IF, ELSE, TRUE, FALSE, CLASS, IS,
+        IF, ELSE, TRUE, FALSE, CLASS, IS, BREAK, RETURN, WHILE, FOR, CONTINUE, IN,
 
         INVALID, NEWLINE, EOF
     }
